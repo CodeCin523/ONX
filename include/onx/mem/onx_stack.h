@@ -15,7 +15,7 @@ typedef struct onx_vstack {
     u32 count;
 } onx_vstack_t;
 
-inline u64 *onx_vstack_push(onx_vstack_t *vstack, u32 size) {
+static inline u64 *onx_vstack_push(onx_vstack_t *vstack, u32 size) {
     if(vstack == nullptr)
         return nullptr;
 
@@ -35,7 +35,7 @@ inline u64 *onx_vstack_push(onx_vstack_t *vstack, u32 size) {
 
     return (u64*)head + 1;
 }
-inline void onx_vstack_pop(onx_vstack_t *vstack, u64 *addr) {
+static inline void onx_vstack_pop(onx_vstack_t *vstack, u64 *addr) {
     if(vstack == nullptr)
         return;
     if(vstack->pool == (u64 *)vstack->last /*vstack->last->lcount == 0*/)
@@ -47,15 +47,18 @@ inline void onx_vstack_pop(onx_vstack_t *vstack, u64 *addr) {
     }
     struct onx_stkspace *foot = head + head->ncount;
 
-    if(addr != nullptr) {
+    if(addr != nullptr && foot != vstack->last) {
         foot->flags = 1;
     } else {
+        foot->lcount = 0;
+        foot->flags = 0;
+        head->ncount = 0;
         vstack->last = head;
         if(head->flags == 1)
             onx_vstack_pop(vstack, nullptr);
     }
 }
-inline void onx_vstack_clear(onx_vstack_t *vstack) {
+static inline void onx_vstack_clear(onx_vstack_t *vstack) {
     vstack->last = (struct onx_stkspace *) vstack->pool;
     vstack->last->flags = 0;
     vstack->last->lcount = 0;

@@ -15,6 +15,7 @@ onx_status_t onx_exit() {
 /* ################ */
 
 // Find Current Index
+/*
 static inline u32 findci(onx_hid16_t hid) {
     u32 low = 0, high = itemCount, mid;
 
@@ -45,7 +46,7 @@ static inline u16 findii(onx_hid16_t hid) {
     }
     return low;
 
-}
+}*/
 
 onx_status_t onx_register_handler(onx_handler_t *hnd) {
     return ONX_STATUS_SUCCESS;
