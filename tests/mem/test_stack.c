@@ -46,7 +46,7 @@ static u32 test_vstack(onx_vstack_t *vstk) {
 
 #define PUSH(sz)                                                        \
     do {                                                                \
-        printf("\n-- PUSH %u x u64 --\n", (sz));                         \
+        printf("\n-- PUSH %u x u64 --\n", (sz));                        \
         bufs[bcount] = onx_vstack_push(vstk, (sz) * sizeof(u64));       \
         if (!bufs[bcount]) {                                            \
             printf("push failed (%u)\n", (sz));                         \

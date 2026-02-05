@@ -4,6 +4,7 @@
 #include "../onx_num.h"
 
 struct onx_stkspace {
+    // Could be change to two 32 bits, and the flag is the most-important-bit of lcount. We would go from 0.5MB max to 16GB max.
     u32 flags;  // if flags is 1 and is foot, remove before.
     u16 lcount; // last count
     u16 ncount; // next count
@@ -19,6 +20,7 @@ static inline u64 *onx_vstack_push(onx_vstack_t *vstack, u32 size) {
     if(vstack == nullptr)
         return nullptr;
 
+    // The len logics works, but if size is a multiple of u64, it gives 8 bytes (64bits) bonus.
     u32 len = (size / sizeof(u64)) + 2;
     u32 used = (u64 *)vstack->last - vstack->pool;
     if(len >= vstack->count - used)
@@ -30,6 +32,7 @@ static inline u64 *onx_vstack_push(onx_vstack_t *vstack, u32 size) {
     head->ncount = len;
     head->flags = 0;
     foot->lcount = len;
+    foot->ncount = 0;
     foot->flags = 0;
     vstack->last = foot;
 
@@ -50,9 +53,10 @@ static inline void onx_vstack_pop(onx_vstack_t *vstack, u64 *addr) {
     if(addr != nullptr && foot != vstack->last) {
         foot->flags = 1;
     } else {
-        foot->lcount = 0;
-        foot->flags = 0;
-        head->ncount = 0;
+        // Really only there for sanity, since they will get overwritten if pushed on.
+        // foot->lcount = 0;
+        // foot->flags = 0;
+        // head->ncount = 0;
         vstack->last = head;
         if(head->flags == 1)
             onx_vstack_pop(vstack, nullptr);
