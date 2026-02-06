@@ -12,7 +12,7 @@ static void dump_stkspace(
         "  [%u] %p | flags=%u lastc=%u nextc=%u%s\n",
         idx,
         (void *)s,
-        s->lcount & SHD_MEMDFFLAGS,
+        (s->lcount & SHD_MEMDFFLAGS) != 0,
         s->lcount & SHD_MEMDFVALUE,
         s->ncount,
         (s == last) ? "  <== LAST" : ""
@@ -41,20 +41,21 @@ static u32 test_vstack(shd_dfstack_t *vstk) {
     u32 scount = 0;
     u32 bcount = 0;
 
-    /* Head stkspace */
+    /* Head sentinel meta */
     spaces[scount++] = (struct shd_dfmeta *)vstk->pool;
 
 #define PUSH(sz)                                                        \
     do {                                                                \
         printf("\n-- PUSH %u x u64 --\n", (sz));                        \
-        bufs[bcount] = shd_dfstack_push(vstk, (sz) * sizeof(u64));       \
+        bufs[bcount] = shd_dfstack_push(vstk, (sz) * sizeof(u64));     \
         if (!bufs[bcount]) {                                            \
             printf("push failed (%u)\n", (sz));                         \
             return 1;                                                   \
         }                                                               \
-        spaces[scount++] = vstk->last;                                  \
+        spaces[scount++] = (struct shd_dfmeta *)vstk->last;             \
         bcount++;                                                       \
-        dump_all("after push", spaces, scount, vstk->last);             \
+        dump_all("after push", spaces, scount,                           \
+                 (struct shd_dfmeta *)vstk->last);                      \
     } while (0)
 
     /* Initial allocations */
@@ -65,25 +66,33 @@ static u32 test_vstack(shd_dfstack_t *vstk) {
 
     /* 1. Pop alloc of size 3 (unordered) */
     printf("\n-- POP size-3 allocation (unordered) --\n");
-    shd_dfstack_pop(vstk, (u64 *)bufs[1]);
-    dump_all("after unordered pop (size 3)", spaces, scount, vstk->last);
+    shd_dfstack_pop(vstk, bufs[1]);
+    dump_all("after unordered pop (size 3)",
+             spaces, scount,
+             (struct shd_dfmeta *)vstk->last);
 
     /* 2. Pop last allocation by address (size 4) */
     printf("\n-- POP last allocation by address (size 4) --\n");
-    shd_dfstack_pop(vstk, (u64 *)bufs[3]);
-    dump_all("after pop last by address", spaces, scount, vstk->last);
+    shd_dfstack_pop(vstk, bufs[3]);
+    dump_all("after pop last by address",
+             spaces, scount,
+             (struct shd_dfmeta *)vstk->last);
 
     /* 3. Re-add size 4 */
     printf("\n-- RE-PUSH 4 x u64 --\n");
     bufs[3] = shd_dfstack_push(vstk, 4 * sizeof(u64));
-    spaces[scount++] = vstk->last;
-    dump_all("after re-push size 4", spaces, scount, vstk->last);
+    spaces[scount++] = (struct shd_dfmeta *)vstk->last;
+    dump_all("after re-push size 4",
+             spaces, scount,
+             (struct shd_dfmeta *)vstk->last);
 
     /* 4. Pop everything normally */
     printf("\n-- NORMAL POP (LIFO) UNTIL EMPTY --\n");
-    while (vstk->last != (struct shd_dfmeta *)vstk->pool) {
+    while (vstk->last != vstk->pool) {
         shd_dfstack_pop(vstk, NULL);
-        dump_all("after normal pop", spaces, scount, vstk->last);
+        dump_all("after normal pop",
+                 spaces, scount,
+                 (struct shd_dfmeta *)vstk->last);
     }
 
 #undef PUSH
@@ -95,14 +104,16 @@ static u32 test_vstack(shd_dfstack_t *vstk) {
 int main(void) {
     shd_dfstack_t vstk = {0};
 
-    vstk.pool = calloc(32, sizeof(u64));
+    const u32 POOL_BYTES = 32 * sizeof(u64);
+
+    vstk.pool = calloc(1, POOL_BYTES);
     if (!vstk.pool) {
         printf("Failed to reserve memory\n");
         return 1;
     }
 
-    vstk.last  = (struct shd_dfmeta *)vstk.pool;
-    vstk.count = 32;
+    vstk.last = vstk.pool;
+    vstk.size = POOL_BYTES;
 
     if (test_vstack(&vstk)) {
         free(vstk.pool);
