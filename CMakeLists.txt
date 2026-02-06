@@ -7,7 +7,7 @@ project(
     LANGUAGES C
 )
 
-message(STATUS "[START] SHD project setup")
+message(STATUS "[START] Shemodogan Project Setup")
 
 # ---- CMake settings ----
 set(CMAKE_C_STANDARD 23)
@@ -15,6 +15,9 @@ set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # ---- Options ----
+option(SHD_LIB "Shemodogan Library Setup" ON)
+option(SHD_EXAMPLES "Shemodogan Examples Application Setup" OFF)
+option(SHD_TEST "Shemodogan Test Application Setup" OFF)
 # option(shd_handlerWindow  "Enable the window handler"  ON)
 # option(shd_handlerSetting "Enable the setting handler" ON)
 # option(shd_thrSafety      "Enable thread safety"       OFF)
@@ -45,19 +48,17 @@ find_package(Vulkan REQUIRED)
 # )
 
 # ---- Subprojects ----
-if(NOT DEFINED shdl OR shdl)
-    message(STATUS "  [START] SHDLibrary setup")
-    add_subdirectory(src shdl)
+if(SHD_LIB)
+    message(STATUS "  [START] ShD_Library Setup")
+    add_subdirectory(src)
+endif()
+if(SHD_EXAMPLES)
+    message(STATUS "  [START] SHD_Examples Application Setup")
+    add_subdirectory(examples)
+endif()
+if(SHD_TEST)
+    message(STATUS "  [START] SHD_Test Application Setup")
+    add_subdirectory(test)
 endif()
 
-if(DEFINED shde AND shde)
-    message(STATUS "  [START] SHDExamples applications setup")
-    add_subdirectory(examples shde)
-endif()
-
-if(DEFINED shdt AND shdt)
-    message(STATUS "  [START] SHDTests applications setup")
-    add_subdirectory(tests shdt)
-endif()
-
-message(STATUS "[END] SHD project setup")
+message(STATUS "[END] Shemodogan Project Setup")

@@ -19,13 +19,13 @@ If you want to build **Shemodogan** by itself, follow these steps:
 
 1. **Configure the Build**:
    ```bash
-   cmake -S . -B _build
+   cmake -S . -B build
    ```
    This sets everything up for the build.
 
 2. **Compile the Project**:
    ```bash
-   cmake --build _build
+   cmake --build build
    ```
 
 ### Include as a Subdirectory

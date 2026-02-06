@@ -42,7 +42,7 @@ static inline void *shd_dfstack_push(shd_dfstack_t *vstack, u32 size) {
 
     return (u8 *)head + sizeof(struct shd_dfmeta);
 }
-static inline void *shd_dfstack_push_aligned(
+/* static inline void *shd_dfstack_push_aligned(
     shd_dfstack_t *vstack, u32 size, u32 align)
 {
     if (!vstack || align == 0)
@@ -53,8 +53,7 @@ static inline void *shd_dfstack_push_aligned(
               (uintptr_t)payload_base;
 
     return shd_dfstack_push(vstack, size + pad);
-}
-
+} */
 static inline void shd_dfstack_pop(shd_dfstack_t *vstack, void *addr) {
     if (!vstack)
         return;
