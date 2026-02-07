@@ -20,16 +20,35 @@ typedef struct shd_dfstack {
 } shd_dfstack_t;
 
 
+static inline void shd_create_dfstack(shd_dfstack_t *vstack, void *pool, u32 size) {
+    if(!vstack) return;
+
+    vstack->pool = pool;
+    vstack->last = vstack->pool;
+    vstack->size = size;
+
+    struct shd_dfmeta *meta = (struct shd_dfmeta *)vstack->last;
+    meta->lcount = 0;
+    meta->ncount = 0;
+}
+static inline void shd_destroy_dfstack(shd_dfstack_t *vstack) {
+    if(!vstack) return;
+
+    vstack->pool = 0;
+    vstack->last = 0;
+    vstack->size = 0;
+}
+
 static inline void *shd_dfstack_push(shd_dfstack_t *vstack, u32 size) {
     if (!vstack)
-        return nullptr;
+        return 0;
 
     // total distance between metas
     u32 span = sizeof(struct shd_dfmeta) + size;
 
     // bounds check
     if ((u32)(vstack->last - vstack->pool) + span > vstack->size)
-        return nullptr;
+        return 0;
 
     struct shd_dfmeta *head = (struct shd_dfmeta *)vstack->last;
     struct shd_dfmeta *foot = (struct shd_dfmeta *)(vstack->last + span);

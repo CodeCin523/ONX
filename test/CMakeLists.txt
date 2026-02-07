@@ -3,3 +3,9 @@ target_link_libraries(
     test_stack PRIVATE
     Shemodogan::SHD
 )
+
+add_executable(test_shd test_shd.c)
+target_link_libraries(
+    test_shd PRIVATE
+    Shemodogan::SHD
+)
