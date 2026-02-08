@@ -3,6 +3,15 @@
 #include <stdio.h>
 
 
+shd_status_t Init(shd_headcrt_t *) {
+    printf("Initializing...\n");
+    return SHD_STATUS_SUCCESS;
+}
+shd_status_t Term() {
+    printf("Terminating...\n");
+    return SHD_STATUS_SUCCESS;
+}
+
 struct foo_data {
     shd_headhnd_t handler_header;
 };
@@ -13,20 +22,18 @@ struct bar_data {
 u16 deps[] = {100, 101};
 
 shd_handler_t handler_foo = {
-    0, 0, 0,
+    Init, Term, 0,
     "HANDLER_FOO",
     deps,
     0,
-    sizeof(struct foo_data),
-    100
+    sizeof(struct foo_data)
 };
 shd_handler_t handler_bar = {
-    0, 0, 0,
+    Init, Term, 0,
     "HANDLER_BAR",
     deps,
     1,
-    sizeof(struct bar_data),
-    101
+    sizeof(struct bar_data)
 };
 
 #ifndef TEST_NOMAIN
@@ -46,7 +53,7 @@ int main(void) {
     printf("Success init.\n");
 
     // Register handlers
-    status = shd_register_handler(&handler_foo);
+    status = shd_register_handler(100, &handler_foo);
     printf("%d - ", status);
     if(status != SHD_STATUS_SUCCESS) {
         printf("Failed register foo.\n");
@@ -54,7 +61,7 @@ int main(void) {
     }
     printf("Success register foo.\n");
 
-    status = shd_register_handler(&handler_bar);
+    status = shd_register_handler(101, &handler_bar);
     printf("%d - ", status);
     if(status != SHD_STATUS_SUCCESS) {
         printf("Failed register foo.\n");
@@ -80,14 +87,6 @@ int main(void) {
     printf("Success initialize bar.\n");
 
     // Terminate handler
-    status = shd_handler_terminate(100);
-    printf("%d - ", status);
-    if(status != SHD_STATUS_SUCCESS) {
-        printf("Failed terminate foo.\n");
-        return 1;
-    }
-    printf("Success terminate foo.\n");
-    
     status = shd_handler_terminate(101);
     printf("%d - ", status);
     if(status != SHD_STATUS_SUCCESS) {
@@ -96,6 +95,14 @@ int main(void) {
     }
     printf("Success terminate bar.\n");
 
+    status = shd_handler_terminate(100);
+    printf("%d - ", status);
+    if(status != SHD_STATUS_SUCCESS) {
+        printf("Failed terminate foo.\n");
+        return 1;
+    }
+    printf("Success terminate foo.\n");
+    
     shd_exit();
     return 0;
 }

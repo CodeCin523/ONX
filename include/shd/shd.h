@@ -34,10 +34,10 @@
 shd_status_t shd_init();
 shd_status_t shd_exit();
 
-shd_status_t shd_register_handler(shd_handler_t *hnd);
+shd_status_t shd_register_handler(shd_hid16_t hid, shd_handler_t *hnd);
 
-shd_status_t shd_check_dependencies(shd_handler_t *hnd);
-shd_status_t shd_check_dependents(shd_handler_t *hnd);
+shd_status_t shd_check_dependencies(shd_hid16_t hid, shd_handler_t *hnd);
+shd_status_t shd_check_dependents(shd_hid16_t hid, shd_handler_t *hnd);
 
 shd_status_t shd_handler_initialize(shd_hid16_t hid, shd_headcrt_t *creator);
 shd_status_t shd_handler_terminate(shd_hid16_t hid);
