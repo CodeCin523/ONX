@@ -3,7 +3,7 @@
 #include <stdio.h>
 
 
-shd_status_t Init(shd_headcrt_t *) {
+shd_status_t Init(shd_basecrt_t *) {
     printf("Initializing...\n");
     return SHD_STATUS_SUCCESS;
 }
@@ -13,22 +13,22 @@ shd_status_t Term() {
 }
 
 struct foo_data {
-    shd_headhnd_t handler_header;
+    shd_basehnd_t handler_header;
 };
 struct bar_data {
-    shd_headhnd_t handler_header;
+    shd_basehnd_t handler_header;
 };
 
 u16 deps[] = {100, 101};
 
-shd_handler_t handler_foo = {
+shd_handler_meta_t handler_foo = {
     Init, Term, 0,
     "HANDLER_FOO",
     deps,
     0,
     sizeof(struct foo_data)
 };
-shd_handler_t handler_bar = {
+shd_handler_meta_t handler_bar = {
     Init, Term, 0,
     "HANDLER_BAR",
     deps,
@@ -39,7 +39,7 @@ shd_handler_t handler_bar = {
 #ifndef TEST_NOMAIN
 int main(void) {
     shd_status_t status;
-    shd_headcrt_t creator_header = {
+    shd_basecrt_t creator_header = {
         0, 0
     };
     

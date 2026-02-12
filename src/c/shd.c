@@ -1,4 +1,3 @@
-#include "shd/shd_type.h"
 #include <shd/shd.h>
 
 #include <shd/mem/shd_stack.h>
@@ -8,8 +7,8 @@
 
 
 struct hnd_data {
-    shd_handler_t *hnd;
-    shd_headhnd_t *dt;
+    shd_handler_meta_t *hnd;
+    shd_basehnd_t *dt;
     shd_status_t status;
     shd_hid16_t hid;
     u16 childCount;
@@ -101,14 +100,14 @@ static inline u16 findii(shd_hid16_t hid) {
     return low;
 }
 
-shd_status_t shd_register_handler(shd_hid16_t hid, shd_handler_t *hnd) {
+shd_status_t shd_register_handler(shd_hid16_t hid, shd_handler_meta_t *hnd) {
     if(findci(hid) != u32_MAX)
         return SHD_STATUS_HANDLER_ID_EXISTS;
 
     if(g_hnddtCount+1 >= g_hnddtSize)
         return SHD_STATUS_FAILED_EXTERN_ALLOC;
 
-    shd_headhnd_t *dt = (shd_headhnd_t *) shd_dfstack_push(&g_hndstatic_stack, hnd->datalen + 8);
+    shd_basehnd_t *dt = (shd_basehnd_t *) shd_dfstack_push(&g_hndstatic_stack, hnd->datalen + 8);
     if(dt == 0)
         return SHD_STATUS_FAILED_INTERN_ALLOC;
 
@@ -116,7 +115,7 @@ shd_status_t shd_register_handler(shd_hid16_t hid, shd_handler_t *hnd) {
     if(pos != g_hnddtCount) {
         memmove(&g_hnddts[pos + 1],
                 &g_hnddts[pos],
-                g_hnddtCount - pos * sizeof(shd_handler_t));
+                g_hnddtCount - pos * sizeof(shd_handler_meta_t));
     }
     g_hnddts[pos].hnd = hnd;
     g_hnddts[pos].dt = dt;
@@ -129,7 +128,7 @@ shd_status_t shd_register_handler(shd_hid16_t hid, shd_handler_t *hnd) {
     return SHD_STATUS_SUCCESS;
 }
 
-shd_status_t shd_check_dependencies(shd_hid16_t hid, shd_handler_t *hnd) {
+shd_status_t shd_check_dependencies(shd_hid16_t hid, shd_handler_meta_t *hnd) {
     u32 pos = findci(hid);
     if (pos == u32_MAX)
         return SHD_STATUS_HANDLER_ID_NOT_FOUND;
@@ -140,7 +139,7 @@ shd_status_t shd_check_dependencies(shd_hid16_t hid, shd_handler_t *hnd) {
     }
     return SHD_STATUS_SUCCESS;
 }
-shd_status_t shd_check_dependents(shd_hid16_t hid, shd_handler_t *hnd) {
+shd_status_t shd_check_dependents(shd_hid16_t hid, shd_handler_meta_t *hnd) {
     u32 pos = findci(hid);
     if(pos == u32_MAX)
         return SHD_STATUS_HANDLER_ID_NOT_FOUND;
@@ -148,7 +147,7 @@ shd_status_t shd_check_dependents(shd_hid16_t hid, shd_handler_t *hnd) {
     return g_hnddts[pos].childCount == 0? SHD_STATUS_SUCCESS : SHD_STATUS_FAILED;
 }
 
-shd_status_t shd_handler_initialize(shd_hid16_t hid, shd_headcrt_t *creator) {
+shd_status_t shd_handler_initialize(shd_hid16_t hid, shd_basecrt_t *creator) {
     int pos = findci(hid);
     if(pos == u32_MAX)
         return SHD_STATUS_HANDLER_ID_NOT_FOUND;
@@ -202,7 +201,7 @@ shd_status_t shd_handler_terminate(shd_hid16_t hid) {
         g_hnddts[pos].status = SHD_STATUS_HANDLER_INITIALIZED;
     return status;
 }
-shd_headhnd_t *shd_handler_get(shd_hid16_t hid, shd_headgtr_t *getter) {
+shd_basehnd_t *shd_handler_get(shd_hid16_t hid, shd_basegtr_t *getter) {
     int pos = findci(hid);
     if(pos == u32_MAX)
         return 0;

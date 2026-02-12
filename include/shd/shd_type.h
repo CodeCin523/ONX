@@ -15,11 +15,10 @@ enum {  // NEED TO FIND CORRECT VALUES FOR THOSE
     SHD_STATUS_HANDLER_INVALID_STATE        = 6,
     SHD_STATUS_HANDLER_MISSING_DEPENDENCIES = 7,
     SHD_STATUS_HANDLER_EXISTENT_DEPENDENTS  = 8,
+    SHD_STATUS_HANDLER_MISSING_CREATOR      = 9,
+    SHD_STATUS_HANDLER_INVALID_CREATOR      = 10,
     SHD_STATUS_HANDLER_INITIALIZED          = 100,
     SHD_STATUS_HANDLER_TERMINATED           = 101,
-    SHD_STATUS_HANDLER_INVALID_CREATOR      = -1,
-    SHD_STATUS_HANDLER_INVALID_DEPENDENCIES = -1,
-    SHD_STATUS_HANDLER_INVALID_DEPENDENTS   = -1,
 };
 
 typedef u32 shd_crttype_t;
@@ -34,17 +33,17 @@ typedef u32 shd_gtrtype_t;
 typedef u32 shd_gtrflags_t;
 #define SHD_GTRFLAG_DIRECT_INSTANCE (1)
 
-typedef struct shd_headcrt {
+typedef struct shd_basecrt {
     shd_crttype_t  type;
     shd_crtflags_t flags;
-} shd_headcrt_t;
-typedef struct shd_headgtr {
+} shd_basecrt_t;
+typedef struct shd_basegtr {
     shd_gtrtype_t  type;
     shd_gtrflags_t flags;
-} shd_headgtr_t;
-typedef struct shd_headhnd {
+} shd_basegtr_t;
+typedef struct shd_basehnd {
 
-} shd_headhnd_t;
+} shd_basehnd_t;
 
 typedef u64 shd_token_t;
 
@@ -52,17 +51,17 @@ typedef struct shd_actor {
     shd_token_t tkn;
 } shd_actor_t;
 
-typedef struct shd_handler {
+typedef struct shd_handler_meta {
     // Handler function pointers.
-    shd_status_t (*fInitialize)(shd_headcrt_t *);
+    shd_status_t (*fInitialize)(shd_basecrt_t *);
     shd_status_t (*fTerminate)();
 
-    shd_headhnd_t *(*fGet)(shd_headgtr_t *);
+    shd_basehnd_t *(*fGet)(shd_basegtr_t *);
 
     const char *pName;          // Name of handler.
     const shd_hid16_t *pDeps;   // Dependencies of handler.
     const u16 depCount;         // Count of dependencies.
     const u16 datalen;          // Size of handler's struct.
-} shd_handler_t;
+} shd_handler_meta_t;
 
 #endif /* __SHD_TYPE_H__ */
