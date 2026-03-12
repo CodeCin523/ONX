@@ -7,7 +7,7 @@
 #define SHD_ALIGN_UP(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
 
 #define SHD_KB(num) (num * 1024)
-#define SHD_MG(num) (num * 1048576)
+#define SHD_MB(num) (num * 1048576)
 #define SHD_GB(num) (num * 1073741824)
 
 

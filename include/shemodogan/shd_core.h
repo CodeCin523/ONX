@@ -28,6 +28,10 @@
  * |  └─ {st,mt}[0-9]*          : version of the function
  * └─ type suffix
  *    └─ _t                     : yes.
+ *
+ * functions general standard
+ * ├─ return shd_result_t
+ * └─ output values use last out_* parameter
 */
 
 #define SHD_PROVIDER_STD (0)
@@ -63,7 +67,7 @@ enum {
 };
 
 typedef u32 shd_crttype_t;
-typedef u32 shd_gtrtype_t;
+typedef u32 shd_crtflags_t;
 enum {
     // Creator Type
     SHD_CRTTYPE_LOGGER          = SHD_IDUTILS_MAKE_SUBID(
@@ -75,25 +79,8 @@ enum {
     SHD_CRTTYPE_VLKSEQUENCER    = SHD_IDUTILS_MAKE_SUBID(
         SHD_HND_VLKSEQUENCER_ID, SHD_IDUTILS_TYPE_CRT, 0),
 
-    // Getter Type
-    SHD_GTRTYPE_LOGGER          = SHD_IDUTILS_MAKE_SUBID(
-        SHD_HND_LOGGER_ID, SHD_IDUTILS_TYPE_GTR, 0),
-    SHD_GTRTYPE_VLKCORE         = SHD_IDUTILS_MAKE_SUBID(
-        SHD_HND_VLKCORE_ID, SHD_IDUTILS_TYPE_GTR, 0),
-    SHD_GTRTYPE_VLKSWAPCHAIN    = SHD_IDUTILS_MAKE_SUBID(
-        SHD_HND_VLKSWAPCHAIN_ID, SHD_IDUTILS_TYPE_GTR, 0),
-    SHD_GTRTYPE_VLKSEQUENCER    = SHD_IDUTILS_MAKE_SUBID(
-        SHD_HND_VLKSEQUENCER_ID, SHD_IDUTILS_TYPE_GTR, 0),
-};
-
-typedef u32 shd_crtflags_t;
-typedef u32 shd_gtrflags_t;
-enum {
     // Creator Flags
     SHD_CRTFLAGS_DEFAULT_CREATOR = (1 << 0),
-
-    // Getter Flags
-    SHD_GTRFLAGS_DIRECT_INSTANCE = (1 << 0),
 };
 
 
@@ -104,14 +91,6 @@ typedef union {
     };
     u64 _raw;
 } shd_basecrt_t;
-typedef union {
-    struct {
-        shd_gtrtype_t gtype;
-        shd_gtrflags_t flags;
-    };
-    u64 _raw;
-} shd_basegtr_t;
-
 typedef union {
     struct {
 
@@ -129,9 +108,6 @@ typedef struct shd_actor_meta {
     shd_result_t (*fInit)(shd_basecrt_t *);
     shd_result_t (*fTerm)();
 
-    shd_baseact_t *(*fGet)(shd_basegtr_t *);
-
-    const shd_hndid_t parentHandler;
     const u16 datalen;          // Size of actors's struct.
 
 } shd_actor_meta_t;
@@ -139,12 +115,12 @@ typedef struct shd_handler_meta {
     shd_result_t (*fInit)(shd_basecrt_t *);
     shd_result_t (*fTerm)();
 
-    shd_basehnd_t *(*fGet)(shd_basegtr_t *);
+    shd_basehnd_t *pInst;       // the handler struct. if null, the core creates it.
 
     const char *pName;          // Name of handler.
     const shd_hndid_t *pDeps;   // Dependencies of handler.
     const u16 depCount;         // Count of dependencies.
-    const u16 datalen;          // Size of handler's struct.
+    const u16 instlen;          // Size of handler's struct.
 } shd_handler_meta_t;
 
 #define SHD_UTILS_UNDEF
@@ -167,13 +143,11 @@ shd_result_t shd_register_handler_st(shd_hndid_t hndid, shd_handler_meta_t *meta
 shd_result_t shd_handler_init_st(shd_hndid_t hndid, shd_basecrt_t *creator);
 shd_result_t shd_handler_term_st(shd_hndid_t hndid);
 
-shd_basehnd_t *shd_handler_get_mt(shd_hndid_t hndid, shd_basegtr_t *getter);
+shd_result_t shd_handler_get_mt(shd_hndid_t hndid, shd_basehnd_t *out_handler);
 
 // Actor Life-Cycle
-shd_result_t shd_actor_subscribe_mt();
-shd_result_t shd_actor_release_mt();
-
-shd_baseact_t *shd_actor_get_mt();
+shd_result_t shd_actor_subscribe_mt(shd_actid_t actid, shd_basecrt_t *creator, shd_baseact_t **out_actor);
+shd_result_t shd_actor_release_mt(shd_actid_t actid, shd_baseact_t *actor);
 
 
 /* ================================================================================ */
@@ -193,8 +167,6 @@ shd_baseact_t *shd_actor_get_mt();
 
 #define shd_actor_subscribe(...) shd_actor_subscribe_mt(__VA_ARGS__)
 #define shd_actor_release(...) shd_actor_release_mt(__VA_ARGS__)
-
-#define shd_actor_get(...) shd_actor_get_mt(__VA_ARGS__)
 
 
 #endif /* __SHD_CORE_H__ */

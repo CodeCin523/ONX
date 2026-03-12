@@ -18,4 +18,4 @@ Contains the core API, basic numeric type definitions, and internal helper utili
 | File | Description |
 |------|-------------|
 | [shd_num.h](shd_num.md)  | Defines fixed-width integer and floating-point types (i8, u16, f32, etc.) along with min/max constants. Ensures consistent behavior across platforms. |
-| [shd_core.h](shd_core.md) | Core runtime API. Provides lifecycle control, handler registration, and actor access. Full documentation pending implementation. |
+| [shd_core.h](shd_core.md) | Core runtime API. Provides lifecycle control, handler registration, and actor access. |
